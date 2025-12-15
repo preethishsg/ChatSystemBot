@@ -6,7 +6,7 @@ export default function RAGChatInterface() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
-  const [apiUrl, setApiUrl] = useState('http://localhost:8000');
+  const [apiUrl, setApiUrl] = useState('https://chatsystembot.onrender.com');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {

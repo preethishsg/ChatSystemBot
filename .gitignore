@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+
+# Models / data
+*.bin
+*.pt
+*.ckpt
+*.h5
+*.pkl
+data/
+
