@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+venv/
+vector_db.json
+*.log
+.DS_Store
