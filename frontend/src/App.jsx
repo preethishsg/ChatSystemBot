@@ -6,7 +6,7 @@ export default function RAGChatInterface() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
-  const [apiUrl, setApiUrl] = useState('https://preethishsg-rag-system-backend.hf.space');
+  const [apiUrl, setApiUrl] = useState('https://preethishsg-reg-system-backend.hf.space');
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
