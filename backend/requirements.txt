@@ -7,3 +7,5 @@ numpy==1.24.3
 python-multipart==0.0.6
 sentencepiece==0.1.99
 accelerate==0.24.1
+openai
+requests==2.31.0

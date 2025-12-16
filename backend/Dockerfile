@@ -2,20 +2,32 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install build dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+# Copy requirements
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Python packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
 COPY . .
 
-# OpenShift runs as non-root user
-RUN chmod -R 777 /app
+# Create user for Hugging Face
+RUN useradd -m -u 1000 user && \
+    chown -R user:user /app
+
+USER user
+
+# Set environment
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH \
+    PYTHONUNBUFFERED=1
 
 # Expose port
 EXPOSE 8080
