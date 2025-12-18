@@ -9,3 +9,5 @@ sentencepiece==0.1.99
 accelerate==0.24.1
 openai
 requests==2.31.0
+sentence-transformers
+python-dotenv

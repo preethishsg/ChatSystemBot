@@ -1,118 +1,81 @@
-import numpy as np
-from typing import List, Dict, Tuple
 import json
-from pathlib import Path
+import os
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
-class VectorDatabase:
-    """
-    Custom vector database with flat index supporting:
-    - Insert operations (single and batch)
-    - Top-k search using dot product similarity
-    """
-    
-    def __init__(self, dimension: int = 384):
-        self.dimension = dimension
-        self.vectors = []
-        self.metadata = []
-        self.ids = []
-        self.next_id = 0
-        
-    def insert(self, vector: np.ndarray, metadata: Dict = None) -> str:
-        """Insert a single vector with optional metadata"""
-        if vector.shape[0] != self.dimension:
-            raise ValueError(f"Vector dimension {vector.shape[0]} doesn't match database dimension {self.dimension}")
-        
-        doc_id = f"doc_{self.next_id}"
-        self.next_id += 1
-        
-        self.vectors.append(vector)
-        self.metadata.append(metadata or {})
-        self.ids.append(doc_id)
-        
-        return doc_id
-    
-    def batch_insert(self, vectors: List[np.ndarray], metadata_list: List[Dict] = None) -> List[str]:
-        """Insert multiple vectors at once"""
-        if metadata_list is None:
-            metadata_list = [{}] * len(vectors)
-        
-        if len(vectors) != len(metadata_list):
-            raise ValueError("Number of vectors and metadata entries must match")
-        
-        doc_ids = []
-        for vector, metadata in zip(vectors, metadata_list):
-            doc_id = self.insert(vector, metadata)
-            doc_ids.append(doc_id)
-        
-        return doc_ids
-    
-    def search(self, query_vector: np.ndarray, k: int = 5) -> List[Tuple[str, float, Dict]]:
+
+class VectorDB:
+    def __init__(self, doc_path: str = "documents.json"):
         """
-        Search for top-k most similar vectors using dot product similarity
-        Returns: List of (doc_id, similarity_score, metadata) tuples
+        Lightweight in-memory vector DB for RAG
         """
-        if len(self.vectors) == 0:
-            return []
-        
-        if query_vector.shape[0] != self.dimension:
-            raise ValueError(f"Query vector dimension {query_vector.shape[0]} doesn't match database dimension {self.dimension}")
-        
-        # Normalize query vector for dot product similarity
-        query_norm = query_vector / (np.linalg.norm(query_vector) + 1e-8)
-        
-        # Calculate dot product with all vectors
-        similarities = []
-        for i, vec in enumerate(self.vectors):
-            vec_norm = vec / (np.linalg.norm(vec) + 1e-8)
-            similarity = np.dot(query_norm, vec_norm)
-            similarities.append((i, similarity))
-        
-        # Sort by similarity (descending)
-        similarities.sort(key=lambda x: x[1], reverse=True)
-        
-        # Return top-k results
-        k = min(k, len(similarities))
+        self.doc_path = doc_path
+        self.documents = []
+        self.embeddings = []
+
+        print("Loading embedding model (BGE-micro)...")
+        self.model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+        self._load_documents()
+
+    def _load_documents(self):
+        if not os.path.exists(self.doc_path):
+            raise FileNotFoundError(f"{self.doc_path} not found")
+
+        with open(self.doc_path, "r", encoding="utf-8") as f:
+            self.documents = json.load(f)
+
+        if not isinstance(self.documents, list):
+            raise ValueError("documents.json must be a list of objects")
+
+        self.embeddings = []
+
+        for idx, doc in enumerate(self.documents):
+            text = (
+                doc.get("data")
+		or doc.get("text")
+                or doc.get("content")
+                or doc.get("page_content")
+                or doc.get("description")
+            )
+
+            if not text:
+                raise ValueError(
+                    f"Document at index {idx} missing text field. "
+                    f"Available keys: {list(doc.keys())}"
+                )
+
+            embedding = self.model.encode(
+                text,
+                normalize_embeddings=True,
+                show_progress_bar=False,
+            )
+
+            self.embeddings.append(embedding)
+
+        self.embeddings = np.array(self.embeddings)
+        print(f"Loaded {len(self.documents)} documents into vector DB")
+
+    def search(self, query: str, top_k: int = 3):
+        """
+        Semantic similarity search
+        """
+        query_emb = self.model.encode(
+            query,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+
+        scores = np.dot(self.embeddings, query_emb)
+        top_indices = scores.argsort()[-top_k:][::-1]
+
         results = []
-        for i, sim in similarities[:k]:
-            results.append((self.ids[i], float(sim), self.metadata[i]))
-        
+        for idx in top_indices:
+            results.append(
+                {
+                    "score": float(scores[idx]),
+                    "document": self.documents[idx],
+                }
+            )
+
         return results
-    
-    def save(self, filepath: str):
-        """Save database to disk"""
-        data = {
-            'dimension': self.dimension,
-            'vectors': [v.tolist() for v in self.vectors],
-            'metadata': self.metadata,
-            'ids': self.ids,
-            'next_id': self.next_id
-        }
-        
-        Path(filepath).parent.mkdir(parents=True, exist_ok=True)
-        with open(filepath, 'w') as f:
-            json.dump(data, f)
-    
-    @classmethod
-    def load(cls, filepath: str) -> 'VectorDatabase':
-        """Load database from disk"""
-        with open(filepath, 'r') as f:
-            data = json.load(f)
-        
-        db = cls(dimension=data['dimension'])
-        db.vectors = [np.array(v) for v in data['vectors']]
-        db.metadata = data['metadata']
-        db.ids = data['ids']
-        db.next_id = data['next_id']
-        
-        return db
-    
-    def __len__(self):
-        return len(self.vectors)
-    
-    def stats(self) -> Dict:
-        """Return database statistics"""
-        return {
-            'total_documents': len(self.vectors),
-            'dimension': self.dimension,
-            'next_id': self.next_id
-        }
