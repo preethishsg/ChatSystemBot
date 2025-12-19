@@ -53,8 +53,7 @@ useState('https://preethishsg-reg-system-backend.hf.space');
         },
         body: JSON.stringify({
           query: input,
-          k: 3,
-          max_length: 150
+          k: 3        
         })
       });
 
