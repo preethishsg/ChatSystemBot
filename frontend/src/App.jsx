@@ -97,7 +97,7 @@ from-purple-400 to-pink-400 bg-clip-text text-transparent">
             RAG System Chat
           </h1>
           <p className="text-slate-400">
-            Powered by BGE-micro embeddings, Custom Vector DB & GPT-2
+            Powered by BGE-micro embeddings, Custom Vector DB & Mistral AI
           </p>
         </div>
 
@@ -265,8 +265,8 @@ py-1 text-slate-300 font-mono text-xs"
         </div>
 
         <div className="mt-6 text-center text-slate-400 text-sm">
-          <p>Custom Vector DB with Flat Index | BGE-micro Embeddings | 
-GPT-2 Generation</p>
+          <p>Custom Vector DB With FIASS | BGE-micro Embeddings | 
+Mistral AI Generation</p>
         </div>
       </div>
     </div>
