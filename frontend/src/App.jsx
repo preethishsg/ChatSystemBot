@@ -170,7 +170,7 @@ networks"
                   
                   {message.retrievedDocs && message.retrievedDocs.length > 
 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/20">
+                   
                       <p className="text-xs text-slate-400 mb-2">
                         📚 Retrieved {message.retrievedDocs.length} 
 documents
@@ -193,7 +193,7 @@ text-purple-300">{doc.id}</span>
                           </div>
                         ))}
                       </div>
-                    </div>
+                    
                   )}
                   
                   <p className="text-xs text-slate-400 mt-2">
