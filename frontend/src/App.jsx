@@ -172,8 +172,7 @@ networks"
 0 && ( <div>
                    
                       <p className="text-xs text-slate-400 mb-2">
-                        📚 Retrieved {message.retrievedDocs.length} 
-documents
+                        📚 Retrieved {message.retrievedDocs.length} documents
                       </p>
                       <div className="space-y-2">
                         {message.retrievedDocs.map((doc, i) => (
