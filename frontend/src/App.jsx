@@ -169,7 +169,7 @@ networks"
                   <p className="whitespace-pre-wrap">{message.content}</p>
                   
                   {message.retrievedDocs && message.retrievedDocs.length > 
-0 && (
+0 && ( <div>
                    
                       <p className="text-xs text-slate-400 mb-2">
                         📚 Retrieved {message.retrievedDocs.length} 
@@ -193,7 +193,7 @@ text-purple-300">{doc.id}</span>
                           </div>
                         ))}
                       </div>
-                    
+                    </div>
                   )}
                   
                   <p className="text-xs text-slate-400 mt-2">
