@@ -181,8 +181,6 @@ documents
 rounded p-2">
                             <div className="flex items-center 
 justify-between mb-1">
-                              <span className="font-mono 
-text-purple-300">{doc.id}</span>
                               <span className="text-green-400">
                                 {(doc.score * 100).toFixed(1)}% match
                               </span>
