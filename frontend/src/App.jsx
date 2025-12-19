@@ -177,17 +177,15 @@ documents
                       </p>
                       <div className="space-y-2">
                         {message.retrievedDocs.map((doc, i) => (
-                          <div key={i} className="text-xs bg-black/20 
-rounded p-2">
-                            <div className="flex items-center 
-justify-between mb-1">
+                          <div key={i} className="text-xs bg-black/20 rounded p-2">
+                           <p className="text-slate-300 line-clamp-2">
+                              {doc.metadata.text}
+                            </p>
+                            <div className="flex items-center justify-end mb-1">
                               <span className="text-green-400">
                                 {(doc.score * 100).toFixed(1)}% match
                               </span>
                             </div>
-                            <p className="text-slate-300 line-clamp-2">
-                              {doc.metadata.text}
-                            </p>
                           </div>
                         ))}
                       </div>
