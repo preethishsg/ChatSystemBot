@@ -1,81 +1,66 @@
 import json
-import os
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 class VectorDB:
-    def __init__(self, doc_path: str = "documents.json"):
-        """
-        Lightweight in-memory vector DB for RAG
-        """
-        self.doc_path = doc_path
+    def __init__(self):
+        # Load embedding model
+        self.model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+
+        # Storage
         self.documents = []
         self.embeddings = []
 
-        print("Loading embedding model (BGE-micro)...")
-        self.model = SentenceTransformer("BAAI/bge-small-en-v1.5")
+        # Embedding dimension
+        self.dimension = self.model.get_sentence_embedding_dimension()
 
-        self._load_documents()
-
-    def _load_documents(self):
-        if not os.path.exists(self.doc_path):
-            raise FileNotFoundError(f"{self.doc_path} not found")
-
-        with open(self.doc_path, "r", encoding="utf-8") as f:
+    def load_documents(self, path="documents.json"):
+        """
+        Load documents from JSON file and create embeddings.
+        Expected schema:
+        [
+          {
+            "id": "...",
+            "data": "text content"
+          }
+        ]
+        """
+        with open(path, "r", encoding="utf-8") as f:
             self.documents = json.load(f)
 
-        if not isinstance(self.documents, list):
-            raise ValueError("documents.json must be a list of objects")
+        texts = [doc["data"] for doc in self.documents]
+        self.embeddings = self.model.encode(texts, convert_to_numpy=True)
 
-        self.embeddings = []
-
-        for idx, doc in enumerate(self.documents):
-            text = (
-                doc.get("data")
-		or doc.get("text")
-                or doc.get("content")
-                or doc.get("page_content")
-                or doc.get("description")
-            )
-
-            if not text:
-                raise ValueError(
-                    f"Document at index {idx} missing text field. "
-                    f"Available keys: {list(doc.keys())}"
-                )
-
-            embedding = self.model.encode(
-                text,
-                normalize_embeddings=True,
-                show_progress_bar=False,
-            )
-
-            self.embeddings.append(embedding)
-
-        self.embeddings = np.array(self.embeddings)
-        print(f"Loaded {len(self.documents)} documents into vector DB")
-
-    def search(self, query: str, top_k: int = 3):
+    def search(self, query):
         """
-        Semantic similarity search
+        Search documents using cosine similarity.
+        Returns a list of:
+        {
+          id,
+          score,
+          metadata: { text }
+        }
         """
-        query_emb = self.model.encode(
-            query,
-            normalize_embeddings=True,
-            show_progress_bar=False,
-        )
+        if not self.documents:
+            return []
 
-        scores = np.dot(self.embeddings, query_emb)
-        top_indices = scores.argsort()[-top_k:][::-1]
+        query_embedding = self.model.encode([query], convert_to_numpy=True)
+
+        scores = cosine_similarity(query_embedding, self.embeddings)[0]
 
         results = []
-        for idx in top_indices:
-            results.append(
-                {
-                    "score": float(scores[idx]),
-                    "document": self.documents[idx],
+        for idx, score in enumerate(scores):
+            results.append({
+                "id": self.documents[idx]["id"],
+                "score": float(score),
+                "metadata": {
+                    "text": self.documents[idx]["data"]
                 }
-            )
+            })
+
+        # Sort by similarity score (highest first)
+        results.sort(key=lambda x: x["score"], reverse=True)
 
         return results

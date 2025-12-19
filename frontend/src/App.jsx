@@ -53,8 +53,7 @@ useState('https://preethishsg-reg-system-backend.hf.space');
         },
         body: JSON.stringify({
           query: input,
-          k: 3,
-          max_length: 150
+          k: 3        
         })
       });
 
@@ -98,7 +97,7 @@ from-purple-400 to-pink-400 bg-clip-text text-transparent">
             RAG System Chat
           </h1>
           <p className="text-slate-400">
-            Powered by BGE-micro embeddings, Custom Vector DB & GPT-2
+            Powered by BGE-micro embeddings, Custom Vector DB & Mistral AI
           </p>
         </div>
 
@@ -170,27 +169,22 @@ networks"
                   <p className="whitespace-pre-wrap">{message.content}</p>
                   
                   {message.retrievedDocs && message.retrievedDocs.length > 
-0 && (
-                    <div className="mt-3 pt-3 border-t border-white/20">
+0 && ( <div>
+                   
                       <p className="text-xs text-slate-400 mb-2">
-                        📚 Retrieved {message.retrievedDocs.length} 
-documents
+                        📚 Top {message.retrievedDocs.length} Response
                       </p>
                       <div className="space-y-2">
                         {message.retrievedDocs.map((doc, i) => (
-                          <div key={i} className="text-xs bg-black/20 
-rounded p-2">
-                            <div className="flex items-center 
-justify-between mb-1">
-                              <span className="font-mono 
-text-purple-300">{doc.id}</span>
+                          <div key={i} className="text-xs bg-black/20 rounded p-2">
+                           <p className="text-slate-300 line-clamp-2">
+                              {doc.metadata.text}
+                            </p>
+                            <div className="flex items-center justify-end mb-1">
                               <span className="text-green-400">
                                 {(doc.score * 100).toFixed(1)}% match
                               </span>
                             </div>
-                            <p className="text-slate-300 line-clamp-2">
-                              {doc.metadata.text?.substring(0, 100)}...
-                            </p>
                           </div>
                         ))}
                       </div>
@@ -266,8 +260,8 @@ py-1 text-slate-300 font-mono text-xs"
         </div>
 
         <div className="mt-6 text-center text-slate-400 text-sm">
-          <p>Custom Vector DB with Flat Index | BGE-micro Embeddings | 
-GPT-2 Generation</p>
+          <p>Custom Vector DB With FIASS | BGE-micro Embeddings | 
+Mistral AI Generation</p>
         </div>
       </div>
     </div>
