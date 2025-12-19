@@ -188,7 +188,7 @@ text-purple-300">{doc.id}</span>
                               </span>
                             </div>
                             <p className="text-slate-300 line-clamp-2">
-                              {doc.metadata.text?.substring(0, 100)}...
+                              {doc.metadata.text}
                             </p>
                           </div>
                         ))}
